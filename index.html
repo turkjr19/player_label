@@ -499,6 +499,9 @@
                 const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
                 const birthYear = player1Data[0].birthYear;
                 
+                // Get season labels for each OHL season
+                const seasonLabels = player1Data.map(d => `${d.OHL_season}: ${d.season_label}`).join('<br>');
+                
                 player1InfoDiv.innerHTML = `
                     <h3>${player1Name}</h3>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
@@ -506,6 +509,7 @@
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
                     <p><strong>Career PPG:</strong> ${avgPPG}</p>
                     <p><strong>Seasons:</strong> ${player1Data.length}</p>
+                    <p><strong>Season Labels:</strong><br>${seasonLabels}</p>
                 `;
             } else {
                 player1InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
@@ -518,6 +522,9 @@
                 const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
                 const birthYear = player2Data[0].birthYear;
                 
+                // Get season labels for each OHL season
+                const seasonLabels = player2Data.map(d => `${d.OHL_season}: ${d.season_label}`).join('<br>');
+                
                 player2InfoDiv.innerHTML = `
                     <h3>${player2Name}</h3>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
@@ -525,6 +532,7 @@
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
                     <p><strong>Career PPG:</strong> ${avgPPG}</p>
                     <p><strong>Seasons:</strong> ${player2Data.length}</p>
+                    <p><strong>Season Labels:</strong><br>${seasonLabels}</p>
                 `;
             } else {
                 player2InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
