@@ -144,7 +144,7 @@
         <h1>🏒 OHL Player PPG Comparison</h1>
         
         <div class="instructions">
-            Upload CSV to compare two players' Points Per Game across their OHL seasons
+            Upload your Google Sheets CSV export with player_value data to compare two players' Points Per Game across their OHL seasons
         </div>
         
         <div class="controls">
@@ -500,7 +500,7 @@
                 const birthYear = player1Data[0].birthYear;
                 
                 // Get season labels for each OHL season
-                const seasonLabels = player1Data.map(d => `${d.OHL_season}: ${d.season_label}`).join('<br>');
+                const seasonLabels = player1Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
                 
                 player1InfoDiv.innerHTML = `
                     <h3>${player1Name}</h3>
@@ -509,7 +509,7 @@
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
                     <p><strong>Career PPG:</strong> ${avgPPG}</p>
                     <p><strong>Seasons:</strong> ${player1Data.length}</p>
-                    <p><strong>Season Labels:</strong><br>${seasonLabels}</p>
+                    <p><strong>Season Performance:</strong><br>${seasonLabels}</p>
                 `;
             } else {
                 player1InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
@@ -523,7 +523,7 @@
                 const birthYear = player2Data[0].birthYear;
                 
                 // Get season labels for each OHL season
-                const seasonLabels = player2Data.map(d => `${d.OHL_season}: ${d.season_label}`).join('<br>');
+                const seasonLabels = player2Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
                 
                 player2InfoDiv.innerHTML = `
                     <h3>${player2Name}</h3>
@@ -532,7 +532,7 @@
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
                     <p><strong>Career PPG:</strong> ${avgPPG}</p>
                     <p><strong>Seasons:</strong> ${player2Data.length}</p>
-                    <p><strong>Season Labels:</strong><br>${seasonLabels}</p>
+                    <p><strong>Season Performance:</strong><br>${seasonLabels}</p>
                 `;
             } else {
                 player2InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
