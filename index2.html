@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OHL Player PPG Comparison</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #800020 0%, #4a0012 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(128, 0, 32, 0.3);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(128, 0, 32, 0.2);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #800020;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(128, 0, 32, 0.2);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            align-items: end;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #800020;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        select, input[type="file"], button {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        select:focus, input[type="file"]:focus {
+            border-color: #800020;
+            box-shadow: 0 0 0 3px rgba(128, 0, 32, 0.1);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #800020 0%, #4a0012 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(128, 0, 32, 0.4);
+            background: linear-gradient(135deg, #a00024 0%, #600016 100%);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-top: 20px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #800020 0%, #4a0012 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+            box-shadow: 0 8px 25px rgba(128, 0, 32, 0.3);
+        }
+        
+        .player-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .player-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: left;
+            border: 2px solid rgba(128, 0, 32, 0.1);
+            box-shadow: 0 8px 25px rgba(128, 0, 32, 0.1);
+        }
+        
+        .player-card h3 {
+            margin: 0 0 15px 0;
+            color: #800020;
+            font-size: 1.4em;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 2px solid #800020;
+            padding-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .player-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏒 OHL Player PPG Comparison</h1>
+        
+        <div class="instructions">
+            Upload CSV data to compare two players across their OHL seasons
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="fileInput">Upload CSV File</label>
+                <input type="file" id="fileInput" accept=".csv" />
+            </div>
+            
+            <div class="control-group">
+                <label for="player1Select">Player 1</label>
+                <select id="player1Select" disabled>
+                    <option value="">Select Player 1</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="player2Select">Player 2</label>
+                <select id="player2Select" disabled>
+                    <option value="">Select Player 2</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+        
+        <div class="player-info" id="playerInfo" style="display: none;">
+            <div class="player-card" id="player1Info"></div>
+            <div class="player-card" id="player2Info"></div>
+        </div>
+    </div>
+
+    <script>
+        let playerData = [];
+        let chart = null;
+        
+        // Season order mapping
+        const seasonOrder = {
+            'underage': 0,
+            'sixteen': 1,
+            'seventeen': 2,
+            'eighteen': 3,
+            'nineteen': 4
+        };
+        
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    parseCSV(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            playerData = [];            
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length >= headers.length) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    
+                    // Convert numeric fields
+                    row.PPG = parseFloat(row.PPG) || 0;
+                    row.avg_PPG = parseFloat(row.avg_PPG) || 0;
+                    row.birthYear = parseInt(row.birthYear) || 0;
+                    row.GP = parseInt(row.GP) || 0;
+                    row.PTS = parseInt(row.PTS) || 0;
+                    
+                    playerData.push(row);
+                }
+            }
+            
+            populatePlayerDropdowns();
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim().replace(/"/g, ''));
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim().replace(/"/g, ''));
+            return result;
+        }
+        
+        function populatePlayerDropdowns() {
+            const uniquePlayers = [...new Set(playerData.map(row => row.name))].sort();
+            
+            const player1Select = document.getElementById('player1Select');
+            const player2Select = document.getElementById('player2Select');
+            
+            // Clear existing options
+            player1Select.innerHTML = '<option value="">Select Player 1</option>';
+            player2Select.innerHTML = '<option value="">Select Player 2</option>';
+            
+            uniquePlayers.forEach(player => {
+                const option1 = new Option(player, player);
+                const option2 = new Option(player, player);
+                player1Select.add(option1);
+                player2Select.add(option2);
+            });
+            
+            // Enable dropdowns
+            player1Select.disabled = false;
+            player2Select.disabled = false;
+            
+            // Add event listeners
+            player1Select.addEventListener('change', updateChart);
+            player2Select.addEventListener('change', updateChart);
+            
+            console.log(`Loaded ${playerData.length} records for ${uniquePlayers.length} players`);
+        }
+        
+        function updateChart() {
+            const player1Name = document.getElementById('player1Select').value;
+            const player2Name = document.getElementById('player2Select').value;
+            
+            if (!player1Name && !player2Name) {
+                if (chart) {
+                    chart.destroy();
+                    chart = null;
+                }
+                document.getElementById('playerInfo').style.display = 'none';
+                return;
+            }
+            
+            const player1Data = getPlayerSeasonData(player1Name);
+            const player2Data = getPlayerSeasonData(player2Name);
+            
+            createChart(player1Data, player2Data, player1Name, player2Name);
+            updatePlayerInfo(player1Data, player2Data, player1Name, player2Name);
+        }
+        
+        function getPlayerSeasonData(playerName) {
+            if (!playerName) return [];
+            
+            return playerData
+                .filter(row => row.name === playerName)
+                .sort((a, b) => {
+                    const aOrder = seasonOrder[a.OHL_season.toLowerCase()] ?? 999;
+                    const bOrder = seasonOrder[b.OHL_season.toLowerCase()] ?? 999;
+                    return aOrder - bOrder;
+                });
+        }
+        
+        function createChart(player1Data, player2Data, player1Name, player2Name) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // Get all unique seasons from both players
+            const allSeasons = [...new Set([
+                ...player1Data.map(d => d.OHL_season),
+                ...player2Data.map(d => d.OHL_season)
+            ])].sort((a, b) => {
+                const aOrder = seasonOrder[a.toLowerCase()] ?? 999;
+                const bOrder = seasonOrder[b.toLowerCase()] ?? 999;
+                return aOrder - bOrder;
+            });
+            
+            // Get average PPG data for reference
+            const avgPPGData = allSeasons.map(season => {
+                const seasonData = playerData.filter(row => row.OHL_season === season);
+                return seasonData.length > 0 ? seasonData[0].avg_PPG : 0;
+            });
+            
+            const datasets = [];
+            
+            // Add average PPG line
+            datasets.push({
+                label: 'League Average PPG',
+                data: avgPPGData,
+                borderColor: 'rgba(156, 163, 175, 0.8)',
+                backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: false
+            });
+            
+            // Add player 1 data
+            if (player1Name && player1Data.length > 0) {
+                const player1PPG = allSeasons.map(season => {
+                    const data = player1Data.find(d => d.OHL_season === season);
+                    return data ? data.PPG : null;
+                });
+                
+                datasets.push({
+                    label: `${player1Name} PPG`,
+                    data: player1PPG,
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    spanGaps: false,
+                    fill: false
+                });
+            }
+            
+            // Add player 2 data
+            if (player2Name && player2Data.length > 0) {
+                const player2PPG = allSeasons.map(season => {
+                    const data = player2Data.find(d => d.OHL_season === season);
+                    return data ? data.PPG : null;
+                });
+                
+                datasets.push({
+                    label: `${player2Name} PPG`,
+                    data: player2PPG,
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                    spanGaps: false,
+                    fill: false
+                });
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allSeasons.map(s => s.charAt(0).toUpperCase() + s.slice(1)),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Points Per Game Comparison by OHL Season',
+                            font: {
+                                size: 18,
+                                weight: 'bold'
+                            },
+                            color: '#2c3e50',
+                            padding: 20
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'OHL Season',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#2c3e50'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Points Per Game (PPG)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                color: '#2c3e50'
+                            },
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.1
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updatePlayerInfo(player1Data, player2Data, player1Name, player2Name) {
+            const playerInfoDiv = document.getElementById('playerInfo');
+            const player1InfoDiv = document.getElementById('player1Info');
+            const player2InfoDiv = document.getElementById('player2Info');
+            
+            if (!player1Name && !player2Name) {
+                playerInfoDiv.style.display = 'none';
+                return;
+            }
+            
+            playerInfoDiv.style.display = 'grid';
+            
+            // Player 1 info
+            if (player1Name && player1Data.length > 0) {
+                const totalGP = player1Data.reduce((sum, d) => sum + d.GP, 0);
+                const totalPTS = player1Data.reduce((sum, d) => sum + d.PTS, 0);
+                const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
+                const birthYear = player1Data[0].birthYear;
+                
+                // Get season labels for each OHL season
+                const seasonLabels = player1Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
+                
+                player1InfoDiv.innerHTML = `
+                    <h3>${player1Name}</h3>
+                    <p><strong>Birth Year:</strong> ${birthYear}</p>
+                    <p><strong>Total GP:</strong> ${totalGP}</p>
+                    <p><strong>Total PTS:</strong> ${totalPTS}</p>
+                    <p><strong>Career PPG:</strong> ${avgPPG}</p>
+                    <p><strong>Seasons:</strong> ${player1Data.length}</p>
+                    <p><strong>Season Performance:</strong><br>${seasonLabels}</p>
+                `;
+            } else {
+                player1InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
+            }
+            
+            // Player 2 info
+            if (player2Name && player2Data.length > 0) {
+                const totalGP = player2Data.reduce((sum, d) => sum + d.GP, 0);
+                const totalPTS = player2Data.reduce((sum, d) => sum + d.PTS, 0);
+                const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
+                const birthYear = player2Data[0].birthYear;
+                
+                // Get season labels for each OHL season
+                const seasonLabels = player2Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
+                
+                player2InfoDiv.innerHTML = `
+                    <h3>${player2Name}</h3>
+                    <p><strong>Birth Year:</strong> ${birthYear}</p>
+                    <p><strong>Total GP:</strong> ${totalGP}</p>
+                    <p><strong>Total PTS:</strong> ${totalPTS}</p>
+                    <p><strong>Career PPG:</strong> ${avgPPG}</p>
+                    <p><strong>Seasons:</strong> ${player2Data.length}</p>
+                    <p><strong>Season Performance:</strong><br>${seasonLabels}</p>
+                `;
+            } else {
+                player2InfoDiv.innerHTML = '<h3>No Player Selected</h3>';
+            }
+        }
+    </script>
+</body>
+</html>
