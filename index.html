@@ -510,6 +510,8 @@
                 const birthYear = player1Data[0].birthYear;
                 const impact1 = player1Data[0].impact_match1 || 'N/A';
                 const impact2 = player1Data[0].impact_match2 || 'N/A';
+                const dev1 = player1Data[0].dev_match1 || 'N/A';
+                const dev2 = player1Data[0].dev_match2 || 'N/A';
                 
                 // Get season labels for each OHL season
                 const seasonLabels = player1Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
@@ -518,6 +520,8 @@
                     <h3>${player1Name}</h3>
                     <p><strong>Impact Comparable:</strong> ${impact1}</p>
                     <p><strong>Impact Comparable:</strong> ${impact2}</p>
+                    <p><strong>Development Comparable:</strong> ${dev1}</p>
+                    <p><strong>Development Comparable:</strong> ${dev2}</p>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
                     <p><strong>Total GP:</strong> ${totalGP}</p>
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
@@ -537,6 +541,8 @@
                 const birthYear = player2Data[0].birthYear;
                 const impact1 = player2Data[0].impact_match1 || 'N/A';
                 const impact2 = player2Data[0].impact_match2 || 'N/A';
+                const dev1 = player2Data[0].dev_match1 || 'N/A';
+                const dev2 = player2Data[0].dev_match2 || 'N/A';
                 
                 // Get season labels for each OHL season
                 const seasonLabels = player2Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
@@ -545,6 +551,8 @@
                     <h3>${player2Name}</h3>
                     <p><strong>Impact Comparable:</strong> ${impact1}</p>
                     <p><strong>Impact Comparable:</strong> ${impact2}</p>
+                    <p><strong>Development Comparable:</strong> ${dev1}</p>
+                    <p><strong>Development Comparable:</strong> ${dev2}</p>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
                     <p><strong>Total GP:</strong> ${totalGP}</p>
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
