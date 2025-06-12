@@ -508,12 +508,16 @@
                 const totalPTS = player1Data.reduce((sum, d) => sum + d.PTS, 0);
                 const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
                 const birthYear = player1Data[0].birthYear;
+                const impact1 = player1Data[0].impact_match1 || 'N/A';
+                const impact2 = player1Data[0].impact_match2 || 'N/A';
                 
                 // Get season labels for each OHL season
                 const seasonLabels = player1Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
                 
                 player1InfoDiv.innerHTML = `
                     <h3>${player1Name}</h3>
+                    <p><strong>Impact Comparable:</strong> ${impact1}</p>
+                    <p><strong>Impact Comparable:</strong> ${impact2}</p>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
                     <p><strong>Total GP:</strong> ${totalGP}</p>
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
@@ -531,12 +535,16 @@
                 const totalPTS = player2Data.reduce((sum, d) => sum + d.PTS, 0);
                 const avgPPG = totalGP > 0 ? (totalPTS / totalGP).toFixed(3) : '0.000';
                 const birthYear = player2Data[0].birthYear;
+                const impact1 = player2Data[0].impact_match1 || 'N/A';
+                const impact2 = player2Data[0].impact_match2 || 'N/A';
                 
                 // Get season labels for each OHL season
                 const seasonLabels = player2Data.map(d => `${d.OHL_season} season: ${d.season_label}`).join('<br>');
                 
                 player2InfoDiv.innerHTML = `
                     <h3>${player2Name}</h3>
+                    <p><strong>Impact Comparable:</strong> ${impact1}</p>
+                    <p><strong>Impact Comparable:</strong> ${impact2}</p>
                     <p><strong>Birth Year:</strong> ${birthYear}</p>
                     <p><strong>Total GP:</strong> ${totalGP}</p>
                     <p><strong>Total PTS:</strong> ${totalPTS}</p>
